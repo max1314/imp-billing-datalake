@@ -21,7 +21,6 @@ import (
 	"improbable.io/lib/errors"
 	"improbable.io/lib/extclients/aws/awserr"
 	"improbable.io/lib/sharedflags"
-	"improbable.io/proto/improbable/platform"
 
 	// Empty depedencies so go-dep doesn't complain.
 	"github.com/aws/aws-sdk-go/aws"
@@ -152,10 +151,6 @@ func (b *bucket) Exists(path string) (exists bool, err error) {
 	}
 
 	return false, nil
-}
-
-func (b *bucket) GetSupportedFileStorageProvider() improbable_platform.StorageProvider {
-	return improbable_platform.StorageProvider_S3
 }
 
 func (b *bucket) GetSignedUploadURL(path string, md5 string) (url string, err error) {

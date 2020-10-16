@@ -18,8 +18,6 @@ replace improbable.io/lib/extclients/aws/awserr => ./src/improbable.io/lib/extcl
 
 replace improbable.io/lib/testing/flagtest => ./src/improbable.io/lib/testing/flagtest
 
-replace improbable.io/proto => ./src/improbable.io/proto
-
 go 1.15
 
 require (

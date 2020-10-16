@@ -16,7 +16,6 @@ import (
 	"improbable.io/lib/db/blob/internal/reporting"
 	"improbable.io/lib/errors"
 	"improbable.io/lib/sharedflags"
-	"improbable.io/proto/improbable/platform"
 
 	"cloud.google.com/go/storage"
 	"golang.org/x/oauth2"
@@ -233,10 +232,6 @@ func (b *bucket) GetSignedDownloadURL(path string, _ *blob.GetObjectAttributes) 
 		return "", errors.Wrapf(toStandardError(err), "could not sign a download url for %s", path)
 	}
 	return signedURL, nil
-}
-
-func (b *bucket) GetSupportedFileStorageProvider() improbable_platform.StorageProvider {
-	return improbable_platform.StorageProvider_GCS
 }
 
 // Generate a signed URL using the provided MD5 to allow an upload via PUT.

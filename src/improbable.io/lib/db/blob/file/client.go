@@ -15,7 +15,6 @@ import (
 	"improbable.io/lib/db/blob/internal/buffer"
 	"improbable.io/lib/errors"
 	"improbable.io/lib/util/fileutil"
-	"improbable.io/proto/improbable/platform"
 )
 
 type bucket struct {
@@ -179,10 +178,6 @@ func (b *bucket) UpdateACL(path string, acl blob.ACL) error {
 
 func (b *bucket) GetSignedDownloadURL(path string, _ *blob.GetObjectAttributes) (string, error) {
 	return "", errors.New(nil, errors.Unimplemented, "this method is not supported by a local filesystem blob client")
-}
-
-func (b *bucket) GetSupportedFileStorageProvider() improbable_platform.StorageProvider {
-	return improbable_platform.StorageProvider_UNKNOWN
 }
 
 func (b *bucket) GetSignedUploadURL(path string, md5 string) (string, error) {
