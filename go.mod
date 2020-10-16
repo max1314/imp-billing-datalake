@@ -29,8 +29,6 @@ require (
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20201015140912-32ed001d685c // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
 	improbable.io/lib/db/blob v0.0.0-00010101000000-000000000000
 	improbable.io/lib/errors v0.0.0-00010101000000-000000000000 // indirect
 	improbable.io/lib/sharedflags v0.0.0-00010101000000-000000000000 // indirect
