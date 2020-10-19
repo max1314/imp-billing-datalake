@@ -5,8 +5,8 @@ package util
 import (
 	"context"
 
-	"improbable.io/lib/errors"
-	"improbable.io/lib/sharedflags"
+	"imp-billing-datalake/lib/errors"
+	"imp-billing-datalake/lib/sharedflags"
 
 	"google.golang.org/grpc/codes"
 
@@ -22,11 +22,11 @@ var (
 		"If you set this option, you can use NewBucketFromFlag to choose your backing storage.\n Available options are defined in `blob.BackingStorage`.\n Keep in mind that each backing storage uses their own set of config flags.")
 )
 
-func NewDataLakeFromFlag(bucketName string) (DataLake, error) {
+func NewDataLakeFromFlag(bucketName string) (datalake.DataLake, error) {
 	return NewDataLakeFromFlagWithContext(context.Background(), bucketName)
 }
 
-func NewDataLakeFromFlagWithContext(ctx context.Context, bucketName string) (*datalake.DataLake, error) {
+func NewDataLakeFromFlagWithContext(ctx context.Context, bucketName string) (datalake.DataLake, error) {
 	switch *fBlobDataLakeStorage {
 	case string(datalake.S3):
 		return s3.NewDataLake(ctx, bucketName)

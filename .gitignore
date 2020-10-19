@@ -1,10 +1,7 @@
 # git time metric, for people that use that. https://github.com/git-time-metric/gtm
 /.gtm/
-/src/bin
-/src/bin-cache
-/src/pkg
-/src/dist
-/src/keys/local
+/src
+/vendor
 /html
 /TESTS-*
 /bazel-*

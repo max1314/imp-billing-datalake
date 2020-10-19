@@ -4,17 +4,18 @@ package s3
 
 import (
 	"context"
+	datalake "imp-billing-datalake"
 	"io"
 
-	"improbable.io/lib/db/blob"
-	"improbable.io/lib/db/blob/s3"
+	"imp-billing-datalake/lib/db/blob"
+	"imp-billing-datalake/lib/db/blob/s3"
 )
 
 type dataLake struct {
 	bucket blob.Bucket
 }
 
-func NewDataLake(ctx context.Context, bucketName string) (*DataLake, error) {
+func NewDataLake(ctx context.Context, bucketName string) (datalake.DataLake, error) {
 	b, err := s3.NewBucket(ctx, bucketName)
 	if err != nil {
 		return nil, err

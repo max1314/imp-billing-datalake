@@ -5,7 +5,7 @@ package imp_billing_datalake
 import (
 	"io"
 
-	"improbable.io/lib/db/blob"
+	"imp-billing-datalake/lib/db/blob"
 )
 
 type StorageClass = blob.BackingStorage

@@ -1,0 +1,138 @@
+// Copyright (c) Improbable Worlds Ltd, All Rights Reserved
+
+package blob
+
+import (
+	"bytes"
+	"crypto/md5"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"time"
+
+	"lib/db/hash"
+	"lib/errors"
+	"lib/extclients/memcachedext"
+
+	"google.golang.org/grpc/codes"
+)
+
+// ReadCacheDecorator wraps the supplied BucketReader so that any values read from the
+// wrapped bucket will be written to the supplied cache client to avoid round-trips.
+//
+// A valid keyPrefix must be supplied to distinguish this ReadCache from other instances.
+//
+// This cache makes no guarantees with regards to mutations made to the contents of the
+// bucket.
+func ReadCacheDecorator(b BucketReader, client memcachedext.Client, keyPrefix string, opts ...cachedOpt) BucketReader {
+	c := &cacheDecorator{
+		BucketReader:    b,
+		client:          client,
+		bytesExpiration: time.Hour * 1,
+		errorExpiration: time.Minute * 5,
+		keyPrefix:       keyPrefix,
+	}
+	for _, cachedOptFn := range opts {
+		cachedOptFn(c)
+	}
+	return c
+}
+
+type cacheDecorator struct {
+	BucketReader
+	client          memcachedext.Client
+	bytesExpiration time.Duration
+	errorExpiration time.Duration
+	keyPrefix       string
+}
+
+func (c *cacheDecorator) NewReader(p string, opts *ReaderOptions) (io.ReadCloser, error) {
+	b, err := c.getBytes(p)
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.NopCloser(bytes.NewReader(b)), nil
+}
+
+func (c *cacheDecorator) getBytes(p string) ([]byte, error) {
+	cacheKey, err := MakeCacheKey(c.keyPrefix, p)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not compute cache key")
+	}
+	entry, err := c.getCacheEntry(cacheKey)
+	if err != nil {
+		return c.readAndCache(p, cacheKey)
+	}
+	if entry.ErrCode != errors.OK {
+		return nil, errors.New(nil, entry.ErrCode, entry.ErrMsg)
+	}
+	return entry.Bytes, nil
+}
+
+func (c *cacheDecorator) readAndCache(p string, cacheKey string) ([]byte, error) {
+	r, err := c.BucketReader.NewReader(p, nil)
+	if err != nil {
+		defer c.cacheErr(cacheKey, err)
+		return nil, err
+	}
+	defer r.Close()
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		defer c.cacheErr(cacheKey, err)
+		return nil, err
+	}
+	defer c.cacheBytes(cacheKey, b)
+	return b, nil
+}
+
+func (c *cacheDecorator) getCacheEntry(cacheKey string) (CacheEntry, error) {
+	var entry CacheEntry
+	err := memcachedext.Read(c.client, cacheKey, &entry)
+	return entry, err
+}
+
+func (c *cacheDecorator) cacheErr(cacheKey string, err error) {
+	entry := CacheEntry{ErrCode: errors.Code(err), ErrMsg: errors.Desc(err)}
+	_ = memcachedext.Write(c.client, cacheKey, &entry, c.errorExpiration)
+}
+
+func (c *cacheDecorator) cacheBytes(cacheKey string, b []byte) {
+	entry := CacheEntry{Bytes: b, ErrCode: errors.OK}
+	_ = memcachedext.Write(c.client, cacheKey, &entry, c.bytesExpiration)
+}
+
+// MakeCacheKey is used to generate a predicable key given the supplied prefix and
+// value.
+func MakeCacheKey(prefix string, value string) (string, error) {
+	// hash the path to prevent the cacheKey from exceeding 250 chars.
+	hasher := md5.New()
+	if _, err := hasher.Write([]byte(value)); err != nil {
+		return "", errors.Newf(err, errors.Internal, "failed to feed string(%v) to hasher", value)
+	}
+	return fmt.Sprintf("%s/%s", prefix, hash.Md5(hasher.Sum(nil)).ToString()), nil
+}
+
+// CacheEntry is used internally to represent the data returned from the decorated BucketReader.
+type CacheEntry struct {
+	Bytes   []byte
+	ErrCode codes.Code
+	ErrMsg  string
+}
+
+type cachedOpt func(*cacheDecorator)
+
+// WithBytesExpiration is used to control how data read from the bucket should be cached
+// for.
+func WithBytesExpiration(d time.Duration) cachedOpt {
+	return func(c *cacheDecorator) {
+		c.bytesExpiration = d
+	}
+}
+
+// WithErrorExpiration is used to control how long errors returned by the bucket should
+// be cached for.
+func WithErrorExpiration(d time.Duration) cachedOpt {
+	return func(c *cacheDecorator) {
+		c.errorExpiration = d
+	}
+}

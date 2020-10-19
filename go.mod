@@ -1,36 +1,29 @@
 module imp-billing-datalake
 
-replace improbable.io/lib/db/blob => ./src/improbable.io/lib/db/blob
-
-replace improbable.io/lib/db/blob/gcs => ./src/improbable.io/lib/db/blob/gcs
-
-replace improbable.io/lib/db/blob/s3 => ./src/improbable.io/lib/db/blob/s3
-
-replace improbable.io/lib/db/blob/util => ./src/improbable.io/lib/db/blob/util
-
-replace improbable.io/lib/db/hash => ./src/improbable.io/lib/db/blob/hash
-
-replace improbable.io/lib/errors => ./src/improbable.io/lib/errors
-
-replace improbable.io/lib/sharedflags => ./src/improbable.io/lib/sharedflags
-
-replace improbable.io/lib/extclients/aws/awserr => ./src/improbable.io/lib/extclients/aws/awserr
-
-replace improbable.io/lib/testing/flagtest => ./src/improbable.io/lib/testing/flagtest
-
 go 1.15
 
 require (
-	github.com/google/go-cmp v0.5.2 // indirect
-	github.com/mwitkow/go-flagz v0.0.0-20170404101818-12def25b6a92 // indirect
-	github.com/prometheus/client_golang v1.8.0 // indirect
-	github.com/spf13/cobra v1.1.0 // indirect
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
-	golang.org/x/text v0.3.3 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	improbable.io/lib/db/blob v0.0.0-00010101000000-000000000000
-	improbable.io/lib/errors v0.0.0-00010101000000-000000000000 // indirect
-	improbable.io/lib/sharedflags v0.0.0-00010101000000-000000000000 // indirect
-	improbable.io/lib/testing/flagtest v0.0.0-00010101000000-000000000000 // indirect
+	cloud.google.com/go/storage v1.0.0
+	github.com/aws/aws-sdk-go v1.35.9
+	github.com/fortytw2/leaktest v1.3.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
+	github.com/improbable-eng/go-httpwares v0.0.0-20200609095714-edc8019f93cc
+	github.com/jpillora/backoff v1.0.0
+	github.com/mattn/go-isatty v0.0.3
+	github.com/mwitkow/go-flagz v0.0.0-20170404101818-12def25b6a92
+	github.com/prometheus/client_golang v0.9.3
+	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
+	github.com/sirupsen/logrus v1.2.0
+	github.com/spf13/cobra v1.1.1
+	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.3.0
+	github.com/tatsushid/termdeco v0.0.0-20160605062857-dabb2eee98f0
+	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	google.golang.org/api v0.13.0
+	google.golang.org/grpc v1.28.1
 )
+
+//replace (
+//	github.com/grpc/grpc-go.git v1.28.1 => google.golang.org/grpc v1.28.1
+//)
