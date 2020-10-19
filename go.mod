@@ -24,6 +24,7 @@ require (
 	google.golang.org/grpc v1.28.1
 )
 
-//replace (
-//	github.com/grpc/grpc-go.git v1.28.1 => google.golang.org/grpc v1.28.1
-//)
+replace (
+	// not sure when google.golang.org/grpc will down.
+	//github.com/grpc/grpc-go.git v1.28.1 => google.golang.org/grpc v1.28.1
+)
