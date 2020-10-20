@@ -31,6 +31,8 @@ spec:
         - --datalake_blob_storage=gcs
         - --gcs_credentials_account=xxx
         - --gcs_credentials_secret=xxx
+        - --gcs_signed_url_expiration_time=1200 #seconds
+        - --gcs_credentials_type=json
         mage: your-image:version
   ...
 ```
@@ -67,7 +69,7 @@ func main(){
     //TODO with mp
 }
 ```
-- read file to data lake
+- read a file from data lake
 ```golang
 import(
     datalake "github.com/improbable/imp-billing-datalake" 
@@ -115,7 +117,7 @@ func main(){
     //TODO with ct
 }
 ```
-- write file from data lake
+- write a file to data lake
 ```golang
 import(
     datalake "github.com/improbable/imp-billing-datalake" 
