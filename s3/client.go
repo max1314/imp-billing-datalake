@@ -18,7 +18,7 @@ import (
 	"github.com/max1314/imp-billing-datalake/internal/errors"
 	"github.com/max1314/imp-billing-datalake/internal/extclients/aws/awserr"
 	"github.com/max1314/imp-billing-datalake/internal/reporting"
-	"github.com/max1314/imp-billing-datalake/internal/sharedflags"
+	"github.com/max1314/imp-billing-datalake/lib/sharedflags"
 	// Empty depedencies so go-dep doesn't complain.
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
