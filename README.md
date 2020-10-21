@@ -1,8 +1,5 @@
 # imp-billing-datalake
 
-## Commands Read/Write/List from data lake
-- Go To [`imp-billing`](./cmd/imp-billing/README.md) command doc
-
 ## Config StorageBackend
 - for S3
 ```yaml
