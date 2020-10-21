@@ -5,7 +5,7 @@ package util
 import (
 	"context"
 
-	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/lib/errors"
 	"github.com/max1314/imp-billing-datalake/lib/sharedflags"
 
 	"google.golang.org/grpc/codes"

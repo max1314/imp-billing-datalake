@@ -12,7 +12,7 @@ import (
 	"time"
 
 	blob "github.com/max1314/imp-billing-datalake"
-	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/lib/errors"
 	"github.com/max1314/imp-billing-datalake/internal/reporting"
 	"github.com/max1314/imp-billing-datalake/lib/sharedflags"
 

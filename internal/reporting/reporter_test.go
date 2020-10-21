@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	blob "github.com/max1314/imp-billing-datalake"
-	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/lib/errors"
 	"github.com/max1314/imp-billing-datalake/internal/testing/metrics"
 )
 
