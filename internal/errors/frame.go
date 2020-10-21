@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"imp-billing-datalake/lib/sharedflags"
+	"imp-billing-datalake/internal/sharedflags"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

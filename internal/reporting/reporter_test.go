@@ -5,9 +5,9 @@ package reporting
 import (
 	"testing"
 
-	"imp-billing-datalake/lib/db/blob"
-	"imp-billing-datalake/lib/errors"
-	"imp-billing-datalake/lib/testing/metrics"
+	blob "imp-billing-datalake"
+	"imp-billing-datalake/internal/errors"
+	"imp-billing-datalake/internal/testing/metrics"
 )
 
 func TestTrack(t *testing.T) {

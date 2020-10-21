@@ -4,20 +4,46 @@ package imp_billing_datalake
 
 import (
 	"io"
-
-	"imp-billing-datalake/lib/db/blob"
+	"time"
 )
 
-type StorageClass = blob.BackingStorage
+type BackingStorage string
 
 const (
-	GCS StorageClass = "gcs"
-	S3  StorageClass = "s3"
+	GCS BackingStorage = "gcs"
+	S3  BackingStorage = "s3"
 )
 
-// reuse the lib/blob structs
-type ObjectAttributes = blob.ObjectAttributes
-type ReaderOptions = blob.ReaderOptions
+type ObjectAttributesUpdate struct {
+	CacheControl       *string
+	ContentEncoding    *string
+	ContentDisposition *string
+	ContentLanguage    *string
+	ContentType        *string
+	Metadata           map[string]string
+}
+
+type ObjectAttributes struct {
+	CacheControl       string
+	ContentEncoding    string
+	ContentDisposition string
+	ContentLanguage    string
+	ContentType        string
+	Metadata           map[string]string
+	MD5                []byte
+	Size               int64
+	LastModified       time.Time
+}
+
+type GetObjectAttributes struct {
+	// ResponseContentDisposition is only used in S3
+	ResponseContentDisposition string
+}
+
+type ReaderOptions struct {
+	GCSReadCompressed bool
+}
+
 
 type DataLake interface {
 	List(dirPath string) ([]string, []string, error) // return (dirs, objects, err)
