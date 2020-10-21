@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	blob "imp-billing-datalake"
-	"imp-billing-datalake/internal/buffer"
-	"imp-billing-datalake/internal/errors"
-	"imp-billing-datalake/internal/extclients/aws/awserr"
-	"imp-billing-datalake/internal/reporting"
-	"imp-billing-datalake/internal/sharedflags"
+	blob "github.com/max1314/imp-billing-datalake"
+	"github.com/max1314/imp-billing-datalake/internal/buffer"
+	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/internal/extclients/aws/awserr"
+	"github.com/max1314/imp-billing-datalake/internal/reporting"
+	"github.com/max1314/imp-billing-datalake/internal/sharedflags"
 	// Empty depedencies so go-dep doesn't complain.
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"

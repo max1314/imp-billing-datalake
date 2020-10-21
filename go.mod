@@ -1,4 +1,4 @@
-module imp-billing-datalake
+module github.com/max1314/imp-billing-datalake
 
 go 1.15
 

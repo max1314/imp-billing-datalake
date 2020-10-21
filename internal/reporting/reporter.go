@@ -5,8 +5,8 @@ package reporting
 import (
 	"time"
 
-	blob "imp-billing-datalake"
-	"imp-billing-datalake/internal/errors"
+	blob "github.com/max1314/imp-billing-datalake"
+	"github.com/max1314/imp-billing-datalake/internal/errors"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

@@ -5,14 +5,14 @@ package util
 import (
 	"context"
 
-	"imp-billing-datalake/internal/errors"
-	"imp-billing-datalake/internal/sharedflags"
+	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/internal/sharedflags"
 
 	"google.golang.org/grpc/codes"
 
-	blob "imp-billing-datalake"
-	"imp-billing-datalake/gcs"
-	"imp-billing-datalake/s3"
+	blob "github.com/max1314/imp-billing-datalake"
+	"github.com/max1314/imp-billing-datalake/gcs"
+	"github.com/max1314/imp-billing-datalake/s3"
 )
 
 var (

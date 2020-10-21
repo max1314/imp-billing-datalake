@@ -11,10 +11,10 @@ import (
 	"os"
 	"time"
 
-	blob "imp-billing-datalake"
-	"imp-billing-datalake/internal/errors"
-	"imp-billing-datalake/internal/reporting"
-	"imp-billing-datalake/internal/sharedflags"
+	blob "github.com/max1314/imp-billing-datalake"
+	"github.com/max1314/imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/internal/reporting"
+	"github.com/max1314/imp-billing-datalake/internal/sharedflags"
 
 	"cloud.google.com/go/storage"
 	"golang.org/x/oauth2"

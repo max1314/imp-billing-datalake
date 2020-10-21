@@ -3,7 +3,7 @@
 package awserr
 
 import (
-	"imp-billing-datalake/internal/errors"
+	"github.com/max1314/imp-billing-datalake/internal/errors"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
