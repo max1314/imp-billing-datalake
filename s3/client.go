@@ -6,19 +6,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
-	blob "imp-billing-datalake"
-	"imp-billing-datalake/internal/buffer"
-	"imp-billing-datalake/internal/errors"
-	"imp-billing-datalake/internal/extclients/aws/awserr"
-	"imp-billing-datalake/internal/reporting"
-	"imp-billing-datalake/internal/sharedflags"
+	blob "github.com/improbable/imp-billing-datalake"
+	"github.com/improbable/imp-billing-datalake/internal/buffer"
+	"github.com/improbable/imp-billing-datalake/internal/errors"
 	// Empty depedencies so go-dep doesn't complain.
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -27,36 +23,10 @@ import (
 )
 
 var (
-	fSignedUrlExpirationTime = sharedflags.Set.Duration(
-		"s3_signed_url_expiration_time",
-		20*time.Minute,
-		"The expiration time for signed urls for the storage API in minutes")
-	fCredsKey = sharedflags.Set.String(
-		"s3_credentials_key_id", "",
-		"S3 credentials key id.")
-	fCredsKeyFile = sharedflags.Set.String(
-		"s3_credentials_key_id_file", "",
-		"Path to S3 credentials file containing the AWS_KEY_ID")
-	fCredsSecretFile = sharedflags.Set.String(
-		"s3_credentials_key_secret_file", "",
-		"Path to S3 credentials secret file containing the secret key.")
-	fCredsSecret = sharedflags.Set.String(
-		"s3_credentials_secret", "",
-		"S3 sercret key (by value) to be supplied from Vault")
-	fEndpoint = sharedflags.Set.String(
-		"s3_endpoint", "s3.eu-west-2.amazonaws.com",
-		"S3 endpoint")
-	fZone = sharedflags.Set.String(
-		"s3_region", "eu-west-2",
-		"S3 region")
-	fS3ForcePathStyle = sharedflags.Set.Bool(
-		"s3_force_path_style", false,
-		"Have s3 use path style names (s3.com/mybucket/file) instead of virtual host (mybucket.s3.com/file).")
-)
-
-var (
 	schemeRegex = regexp.MustCompile(`^https?://`)
 )
+
+const S3ForcePathStyle = true
 
 // Client abstraction over s3 client to provide upload and download signed URLs for limited time.
 type dataLake struct {
@@ -66,50 +36,23 @@ type dataLake struct {
 }
 
 // You probably want to use imp-billing-datalake/util.NewBucketFromFlag instead for easier support for multiple clouds.
-func NewDataLake(ctx context.Context, bucketName string) (blob.DataLake, error) {
+func NewDataLake(ctx context.Context, bucketName, s3Endpoint, region string, creds *credentials.Credentials) (blob.DataLake, error) {
 	config := &aws.Config{}
+	config.Credentials = creds
 
-	if *fCredsKey != "" || *fCredsKeyFile != "" {
-		keyId := *fCredsKey
-		if *fCredsKeyFile != "" {
-			b, err := ioutil.ReadFile(*fCredsKeyFile)
-			if err != nil {
-				return nil, errors.Wrapf(err, "could not read credentials key file from path %v", *fCredsKeyFile)
-			}
-			keyId = strings.TrimSpace(string(b))
-		}
-
-		var secret string
-		if *fCredsSecret != "" {
-			secret = *fCredsSecret
-		} else {
-			if *fCredsSecretFile == "" {
-				return nil, errors.New(nil, errors.InvalidArgument, "you must set both the key id and the file with the secret key")
-			}
-			secretData, err := ioutil.ReadFile(*fCredsSecretFile)
-			if err != nil {
-				return nil, errors.Wrap(err, "couldn't read file with secret key")
-			}
-			secret = strings.TrimSpace(string(secretData))
-		}
-
-		config.Credentials = credentials.NewStaticCredentials(keyId, secret, "")
+	if !schemeRegex.MatchString(s3Endpoint) {
+		s3Endpoint = "https://" + s3Endpoint
 	}
+	config.Endpoint = aws.String(s3Endpoint)
+	config.S3ForcePathStyle = aws.Bool(S3ForcePathStyle)
 
-	endpoint := *fEndpoint
-	if !schemeRegex.MatchString(endpoint) {
-		endpoint = "https://" + endpoint
-	}
-	config.Endpoint = aws.String(endpoint)
-	config.S3ForcePathStyle = aws.Bool(*fS3ForcePathStyle)
-
-	if *fZone != "" {
-		config.Region = aws.String(*fZone)
+	if region != "" {
+		config.Region = aws.String(region)
 	}
 
 	ses, err := session.NewSession(config)
 	if err != nil {
-		return nil, errors.Wrap(awserr.RemapError(err), "couldn't access aws services")
+		return nil, errors.Wrap(err, "couldn't access aws services ")
 	}
 
 	return &dataLake{
@@ -123,7 +66,6 @@ func NewDataLake(ctx context.Context, bucketName string) (blob.DataLake, error) 
 }
 
 func (b *dataLake) Exists(path string) (exists bool, err error) {
-	defer reporting.Track(reporting.Exists, blob.S3, &err)()
 
 	// AWS S3 behaves weirdly when calling `HeadObject` and the object doesn't exist. Instead of
 	// returning a `NoSuchKey` error, it returns a HTTP 404, which is annoying to deal with. Using
@@ -138,7 +80,7 @@ func (b *dataLake) Exists(path string) (exists bool, err error) {
 	})
 
 	if err != nil {
-		return false, errors.Wrapf(awserr.RemapError(err), "failed to check if object %s exists", path)
+		return false, errors.Wrap(err, fmt.Sprintf("failed to check if object %s exists ", path))
 	}
 
 	for _, content := range r.Contents {
@@ -151,14 +93,13 @@ func (b *dataLake) Exists(path string) (exists bool, err error) {
 }
 
 func (b *dataLake) NewReader(path string) (rc io.ReadCloser, err error) {
-	defer reporting.Track(reporting.NewReader, blob.S3, &err)()
 
 	r, err := b.svc.GetObjectWithContext(b.ctx, &s3.GetObjectInput{
 		Bucket: aws.String(b.bucketName),
 		Key:    aws.String(path),
 	})
 	if err != nil {
-		return nil, errors.Wrapf(awserr.RemapError(err), "error getting the object (%s) from the S3 compatible bucket: %s", path, b.bucketName)
+		return nil, errors.Wrap(err, fmt.Sprintf("error getting the object (%s) from the S3 compatible bucket: %s ", path, b.bucketName))
 	}
 
 	return r.Body, nil
@@ -168,7 +109,6 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 	attrs := &blob.ObjectAttributes{}
 	ctx := context.Background()
 	return buffer.NewClosingBuffer(func(data []byte) (err error) {
-		defer reporting.Track(reporting.NewWriter, blob.S3, &err)()
 
 		put := &s3.PutObjectInput{
 			Body:                 bytes.NewReader(data),
@@ -212,7 +152,7 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 		_, err = b.svc.PutObjectWithContext(ctx, put)
 
 		if err != nil {
-			return errors.Wrap(awserr.RemapError(err), "error putting the object on the S3 compatible server")
+			return errors.Wrap(err,"error putting the object on the S3 compatible server")
 		}
 
 		return nil
@@ -220,20 +160,18 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 }
 
 func (b *dataLake) Delete(path string) (err error) {
-	defer reporting.Track(reporting.Delete, blob.S3, &err)()
 	_, err = b.svc.DeleteObjectWithContext(b.ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(b.bucketName),
 		Key:    aws.String(path),
 	})
 
 	if err != nil {
-		return errors.Wrap(awserr.RemapError(err), "failed to delete S3 object")
+		return errors.Wrap(err,"failed to delete S3 object ")
 	}
 	return nil
 }
 
 func (b *dataLake) Copy(srcPath string, destPath string) (err error) {
-	defer reporting.Track(reporting.Copy, blob.S3, &err)()
 	_, err = b.svc.CopyObjectWithContext(b.ctx, &s3.CopyObjectInput{
 		Bucket:               aws.String(b.bucketName),
 		CopySource:           aws.String(path.Join(b.bucketName, srcPath)),
@@ -242,14 +180,13 @@ func (b *dataLake) Copy(srcPath string, destPath string) (err error) {
 	})
 
 	if err != nil {
-		return errors.Wrap(awserr.RemapError(err), "failed to copy S3 object")
+		return errors.Wrap(err,"failed to copy S3 object ")
 	}
 
 	return nil
 }
 
 func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err error) {
-	defer reporting.Track(reporting.GetDirContent, blob.S3, &err)()
 	r, err := b.svc.ListObjectsV2WithContext(context.Background(), &s3.ListObjectsV2Input{
 		Bucket:    aws.String(b.bucketName),
 		Delimiter: aws.String("/"),
@@ -257,7 +194,7 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 	})
 
 	if err != nil {
-		return nil, nil, errors.Wrap(awserr.RemapError(err), "couldn't list objects at s3 compatible storage")
+		return nil, nil, errors.Wrap(err,"couldn't list objects at s3 compatible storage ")
 	}
 
 	for _, pref := range r.CommonPrefixes {

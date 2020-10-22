@@ -1,40 +1,38 @@
 # imp-billing-datalake
 
-## Commands Read/Write/List from data lake
-- Go To [`imp-billing`](./cmd/imp-billing/README.md) command doc
-
 ## Config StorageBackend
 - for S3
-```yaml
-// deployment.yaml
-spec:
-  template:
-    spec:
-      containers:
-      - args:
-        - --datalake_blob_storage=s3
-        - --s3_credentials_key_id=xxx
-        - --s3_credentials_key_secret=xxx
-        - --s3_endpoint=s3.cn-northwest-1.amazonaws.com.cn
-        - --s3_region=cn-northwest-1
-        mage: your-image:version
-  ...
+```golang
+// use following golang code to configure s3 credentials
+import "github.com/improbable/imp-billing-datalake/util" 
+configMap := util.DataLakeConfigMap{
+    BucketName: "your-s3-bucketname",
+    StorageBackend: "s3",
+    S3CredentialKey: "xxx",
+    S3CredentialSecret: "xxx"
+    S3Endpoint: "xxx",
+    S3Region: "xxx"
+}
 ```
 - for GCS
-```yaml
-// deployment.yaml
-spec:
-  template:
-    spec:
-      containers:
-      - args:
-        - --datalake_blob_storage=gcs
-        - --gcs_credentials_account=xxx
-        - --gcs_credentials_secret=xxx
-        - --gcs_signed_url_expiration_time=1200 #seconds
-        - --gcs_credentials_type=json
-        mage: your-image:version
-  ...
+```golang
+// use following golang code to configure gcs credentials
+import "github.com/improbable/imp-billing-datalake/util" 
+configMap := util.DataLakeConfigMap{
+    BucketName: "your-gcs-bucketname",
+    StorageBackend: "gcs",
+    GcsCredentialAccount: "xxx",
+    GcsCredentialJsonBytes: "xxx"
+}
+// GcsCredentialJsonBytes must include these infos in bytes:
+{
+    "type":"service_account", 
+    "client_email":"", 
+    "private_key_id":"", 
+    "private_key":"", 
+    "token_uri":"", 
+    "project_id":""
+}
 ```
 
 ## Examples
@@ -56,7 +54,11 @@ func genFileStructure(dl datalake.DataLake)(map[string][]string, error){
 }
 
 func main(){
-    dl, err := datalake.util.NewDataLakeFromFlag(bucketName)
+    mp := util.DataLakeConfigMap{
+        ...
+    }
+
+    dl, err := datalake.util.NewDataLakeFromConfigMap(mp)
     if err != nil {
         panic(err)
     }
@@ -104,7 +106,11 @@ func readFileContent(dl datalake.Datalake, srcPath, dstPath string) ([]byte, err
 }
 
 func main(){
-    dl, err := datalake.util.NewDataLakeFromFlag(bucketName)
+    mp := util.DataLakeConfigMap{
+        ...
+    }
+
+    dl, err := datalake.util.NewDataLakeFromConfigMap(mp)
     if err != nil {
         panic(err)
     }
@@ -160,7 +166,11 @@ func uploadFile(dl datalake.Datalake, srcPath, dstPath string) {
 }
 
 func main(){
-    dl, err := datalake.util.NewDataLakeFromFlag(bucketName)
+    mp := util.DataLakeConfigMap{
+        ...
+    }
+
+    dl, err := datalake.util.NewDataLakeFromConfigMap(mp)
     if err != nil {
         panic(err)
     }
