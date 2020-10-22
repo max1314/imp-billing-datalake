@@ -43,14 +43,14 @@ import(
 )
 
 func genFileStructure(dl datalake.DataLake)(map[string][]string, error){
-	var dirs, objs []string
-	dirs, objs, err = dl.List(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	rMap := map[string][]string{"dirs": dirs, "objs": objs}
-	return rMap, err
+    var dirs, objs []string
+    dirs, objs, err = dl.List(filePath)
+    if err != nil {
+        return nil, err
+    }
+    
+    rMap := map[string][]string{"dirs": dirs, "objs": objs}
+    return rMap, err
 }
 
 func main(){
@@ -130,39 +130,39 @@ import(
 )
 
 func uploadFile(dl datalake.Datalake, srcPath, dstPath string) {
-	var err error
-	wc := dl.NewWriter(dstPath)
-	defer func() {
-		err = wc.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	var f *os.File
-	f, err = os.Open(srcPath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	var err1, err2 error
-	for {
-		p := make([]byte, 1024)
-		_, err1 = f.Read(p)
-		if err1 != nil && err1 != io.EOF {
-			panic(err1)
-		}
-
-		_, err2 = wc.Write(p)
-		if err2 != nil {
-			panic(err2)
-		}
-
-		if err1 == io.EOF {
-			break
-		}
-	}
+    var err error
+    wc := dl.NewWriter(dstPath)
+    defer func() {
+        err = wc.Close()
+        if err != nil {
+            panic(err)
+        }
+    }()
+    
+    var f *os.File
+    f, err = os.Open(srcPath)
+    if err != nil {
+        panic(err)
+    }
+    defer f.Close()
+    
+    var err1, err2 error
+    for {
+        p := make([]byte, 1024)
+        _, err1 = f.Read(p)
+        if err1 != nil && err1 != io.EOF {
+            panic(err1)
+        }
+    
+        _, err2 = wc.Write(p)
+        if err2 != nil {
+            panic(err2)
+        }
+    
+        if err1 == io.EOF {
+            break
+        }
+    }
 }
 
 func main(){
