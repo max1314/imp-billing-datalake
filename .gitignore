@@ -15,5 +15,3 @@
 *.orig
 .project/
 
-./github.com/
-./golang.org/
