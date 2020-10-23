@@ -17,7 +17,7 @@ import (
 	"io"
 )
 
-const GCSReadCompressed=true
+const gcsReadCompressed=true
 
 // NewDataLake creates a client with explicit values of creds and project
 func NewDataLake(ctx context.Context, bucketName string, conf *jwt.Config) (blob.DataLake, error) {
@@ -63,7 +63,7 @@ func (b *dataLake) NewReader(path string) (r io.ReadCloser, err error) {
 	//defer reporting.Track(reporting.NewReader, blob.GCS, &err)()
 
 	object := b.bucket.Object(path)
-	object = object.ReadCompressed(GCSReadCompressed)
+	object = object.ReadCompressed(gcsReadCompressed)
 
 	reader, err := object.NewReader(b.ctx)
 	if err != nil {

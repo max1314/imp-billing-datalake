@@ -9,8 +9,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/improbable/imp-billing-datalake/errors"
-	"github.com/improbable/imp-billing-datalake/gcs"
-	"github.com/improbable/imp-billing-datalake/s3"
+	"github.com/improbable/imp-billing-datalake/internal/gcs"
+	"github.com/improbable/imp-billing-datalake/internal/s3"
 	"golang.org/x/oauth2/google"
 )
 
@@ -45,7 +45,6 @@ type DataLakeConfig struct {
 	// must be like: {"type":"service_account", "client_email":"", "private_key_id":"", "private_key":"", "token_uri":"", "project_id":""}
 	GcsCredentialJsonBytes 	[]byte
 }
-
 
 func NewDataLakeFromConfig(mp *DataLakeConfig) (DataLake, error){
 	if mp.StorageContext == nil {
