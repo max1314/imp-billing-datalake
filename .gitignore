@@ -2,9 +2,6 @@
 /.gtm/
 /src
 /vendor
-/html
-/TESTS-*
-/bazel-*
 
 *.swp
 *~
@@ -15,40 +12,10 @@
 .ijwb/
 .vscode/
 *.iml
-npm-debug.log
-toolbelt.log
-go.sublime*
 *.go-e
 .gopath/
 *.orig
 .project/
-*.code-workspace
-*.tfstate
-*.tfstate.*
-
-**/node_modules/**
-
-ci/reports
-.gtm
-.docker/
-
-tools/loadtest/**/artifacts
-jira-rollout-checkout*
-
-tmp
-
-.terraform
-pwgen*
-
-docs/index.md
-docs/toc.md
-
-
-bazel_perf_*
-bazel_build_events.json
-
-# Executables
-*.exe
 
 ./github.com/
 ./golang.org/

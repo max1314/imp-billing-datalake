@@ -9,13 +9,15 @@ import (
 	"context"
 	"fmt"
 	blob "github.com/improbable/imp-billing-datalake"
-	"github.com/improbable/imp-billing-datalake/internal/errors"
+	"github.com/improbable/imp-billing-datalake/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"io"
 )
+
+const GCSReadCompressed=true
 
 // NewDataLake creates a client with explicit values of creds and project
 func NewDataLake(ctx context.Context, bucketName string, conf *jwt.Config) (blob.DataLake, error) {
@@ -61,10 +63,8 @@ func (b *dataLake) NewReader(path string) (r io.ReadCloser, err error) {
 	//defer reporting.Track(reporting.NewReader, blob.GCS, &err)()
 
 	object := b.bucket.Object(path)
-	opts := &blob.ReaderOptions{}
-	if opts != nil && opts.GCSReadCompressed {
-		object = object.ReadCompressed(true)
-	}
+	object = object.ReadCompressed(GCSReadCompressed)
+
 	reader, err := object.NewReader(b.ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Could not create reader for %s ", path))
@@ -74,23 +74,11 @@ func (b *dataLake) NewReader(path string) (r io.ReadCloser, err error) {
 
 func (b *dataLake) NewWriter(path string) io.WriteCloser {
 	w := b.bucket.Object(path).NewWriter(b.ctx)
-	attrs := &blob.ObjectAttributes{}
-
-	if attrs != nil {
-		w.ObjectAttrs.CacheControl = attrs.CacheControl
-		w.ObjectAttrs.ContentEncoding = attrs.ContentEncoding
-		w.ObjectAttrs.ContentDisposition = attrs.ContentDisposition
-		w.ObjectAttrs.ContentLanguage = attrs.ContentLanguage
-		w.ObjectAttrs.ContentType = attrs.ContentType
-		w.ObjectAttrs.Metadata = attrs.Metadata
-	}
-
 	return w
 }
 
 
 func (b *dataLake) Exists(path string) (exists bool, err error) {
-
 	_, err = b.bucket.Object(path).Attrs(b.ctx)
 	if err != nil {
 		return false, errors.Wrap(err, fmt.Sprintf("could not check if %s exists ", path))
@@ -159,18 +147,3 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 	}
 	return
 }
-
-func toAttributes(gcsAttr *storage.ObjectAttrs) *blob.ObjectAttributes {
-	return &blob.ObjectAttributes{
-		CacheControl:       gcsAttr.CacheControl,
-		ContentEncoding:    gcsAttr.ContentEncoding,
-		ContentDisposition: gcsAttr.ContentDisposition,
-		ContentLanguage:    gcsAttr.ContentLanguage,
-		ContentType:        gcsAttr.ContentType,
-		Metadata:           gcsAttr.Metadata,
-		MD5:                gcsAttr.MD5,
-		Size:               gcsAttr.Size,
-		LastModified:       gcsAttr.Updated,
-	}
-}
-

@@ -5,16 +5,13 @@ package s3
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"fmt"
+	blob "github.com/improbable/imp-billing-datalake"
+	"github.com/improbable/imp-billing-datalake/errors"
+	"github.com/improbable/imp-billing-datalake/internal/buffer"
 	"io"
 	"path"
 	"regexp"
-	"strings"
-
-	blob "github.com/improbable/imp-billing-datalake"
-	"github.com/improbable/imp-billing-datalake/internal/buffer"
-	"github.com/improbable/imp-billing-datalake/internal/errors"
 	// Empty depedencies so go-dep doesn't complain.
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -106,7 +103,6 @@ func (b *dataLake) NewReader(path string) (rc io.ReadCloser, err error) {
 }
 
 func (b *dataLake) NewWriter(path string) io.WriteCloser {
-	attrs := &blob.ObjectAttributes{}
 	ctx := context.Background()
 	return buffer.NewClosingBuffer(func(data []byte) (err error) {
 
@@ -115,38 +111,6 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 			Bucket:               aws.String(b.bucketName),
 			Key:                  aws.String(path),
 			ServerSideEncryption: aws.String(s3.ServerSideEncryptionAes256),
-		}
-
-		if attrs != nil {
-			if attrs.CacheControl != "" {
-				put.SetCacheControl(attrs.CacheControl)
-			}
-			if attrs.ContentEncoding != "" {
-				put.SetContentEncoding(attrs.ContentEncoding)
-			}
-			if attrs.ContentDisposition != "" {
-				put.SetContentEncoding(attrs.ContentDisposition)
-			}
-			if attrs.ContentLanguage != "" {
-				put.SetContentLanguage(attrs.ContentLanguage)
-			}
-			if attrs.ContentType != "" {
-				put.SetContentType(attrs.ContentType)
-			}
-
-			if attrs.Metadata != nil {
-				metadata := make(map[string]*string)
-				for k, v := range attrs.Metadata {
-					// Turns out that when you range through a map, `k, v` are reused variables that constantly
-					// get a copy of the current "iterated" values, so taking &v directly will always return the
-					// same address, which eventually points to the last iterated value. To force remembering
-					// addresses to all values, we have to copy them in a new variable.
-					copy := v
-					metadata[k] = &copy
-				}
-
-				put.SetMetadata(metadata)
-			}
 		}
 
 		_, err = b.svc.PutObjectWithContext(ctx, put)
@@ -207,45 +171,3 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 
 	return dirs, objects, nil
 }
-
-func toAttributes(s3Attr *s3.HeadObjectOutput) *blob.ObjectAttributes {
-	var attr *blob.ObjectAttributes = &blob.ObjectAttributes{}
-	if s3Attr.CacheControl != nil {
-		attr.CacheControl = *s3Attr.CacheControl
-	}
-	if s3Attr.ContentEncoding != nil {
-		attr.ContentEncoding = *s3Attr.ContentEncoding
-	}
-	if s3Attr.ContentDisposition != nil {
-		attr.ContentDisposition = *s3Attr.ContentDisposition
-	}
-	if s3Attr.ContentLanguage != nil {
-		attr.ContentLanguage = *s3Attr.ContentLanguage
-	}
-	if s3Attr.ContentType != nil {
-		attr.ContentType = *s3Attr.ContentType
-	}
-	if s3Attr.ContentLength != nil {
-		attr.Size = *s3Attr.ContentLength
-	}
-	if s3Attr.ETag != nil {
-		//NOTE: We drop the error here because upstream
-		//we assume (based on code inspection) that if the
-		//md5 is malformed the code will error elsewhere with
-		//appropriate information and context
-		hexBytes, _ := hex.DecodeString(strings.Trim(*s3Attr.ETag, "\""))
-		attr.MD5 = hexBytes
-	}
-	if s3Attr.LastModified != nil {
-		attr.LastModified = *s3Attr.LastModified
-	}
-	if s3Attr.Metadata != nil {
-		attr.Metadata = map[string]string{}
-		for k, v := range s3Attr.Metadata {
-			attr.Metadata[k] = *v
-		}
-	}
-	return attr
-}
-
-
