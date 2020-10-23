@@ -29,7 +29,7 @@ type DataLakeConfigMap struct {
 }
 
 
-func NewDataLakeFromConfigMap(mp DataLakeConfigMap) (blob.DataLake, error){
+func NewDataLakeFromConfigMap(mp *DataLakeConfigMap) (blob.DataLake, error){
 	if mp.StorageContext == nil {
 		mp.StorageContext = context.Background()
 	}

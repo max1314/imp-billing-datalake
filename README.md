@@ -5,7 +5,7 @@
 ```golang
 // use following golang code to configure s3 credentials
 import "github.com/improbable/imp-billing-datalake/util" 
-configMap := util.DataLakeConfigMap{
+mp := util.DataLakeConfigMap{
     BucketName: "your-s3-bucketname",
     StorageBackend: "s3",
     S3CredentialKey: "xxx",
@@ -18,7 +18,7 @@ configMap := util.DataLakeConfigMap{
 ```golang
 // use following golang code to configure gcs credentials
 import "github.com/improbable/imp-billing-datalake/util" 
-configMap := util.DataLakeConfigMap{
+mp := util.DataLakeConfigMap{
     BucketName: "your-gcs-bucketname",
     StorageBackend: "gcs",
     GcsCredentialAccount: "xxx",
@@ -54,7 +54,7 @@ func genFileStructure(dl datalake.DataLake)(map[string][]string, error){
 }
 
 func main(){
-    mp := util.DataLakeConfigMap{
+    mp := &util.DataLakeConfigMap{
         ...
     }
 
@@ -106,7 +106,7 @@ func readFileContent(dl datalake.Datalake, srcPath, dstPath string) ([]byte, err
 }
 
 func main(){
-    mp := util.DataLakeConfigMap{
+    mp := &util.DataLakeConfigMap{
         ...
     }
 
@@ -166,7 +166,7 @@ func uploadFile(dl datalake.Datalake, srcPath, dstPath string) {
 }
 
 func main(){
-    mp := util.DataLakeConfigMap{
+    mp := &util.DataLakeConfigMap{
         ...
     }
 
