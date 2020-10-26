@@ -35,6 +35,33 @@ mp := datalake.DataLakeConfig{
 }
 ```
 
+## Interface Functions
+- List
+```golang
+List(dirPath string) ([]string, []string, error) 
+// return (dirs, objects, err)
+```
+- NewReader
+```
+NewReader(path string) (io.ReadCloser, error)
+```
+- NewWriter
+```
+NewWriter(path string) io.WriteCloser
+```
+- Copy
+```
+Copy(src string, dst string) error
+```
+- Delete
+```
+Delete(path string) error
+```
+- Exists
+```
+Exists(path string) (bool, error)
+```
+
 ## Examples
 - list files from data lake
 ```golang
@@ -63,120 +90,11 @@ func main(){
         panic(err)
     }
     
-    mp, err := genFileStructure(dl)
+    fs, err := genFileStructure(dl)
     if err != nil {
         panic(err)
     }
 
-    //TODO with mp
-}
-```
-- read a file from data lake
-```golang
-import(
-    datalake datalake "github.com/improbable/imp-billing-datalake" 
-)
-
-func readFileContent(dl datalake.Datalake, srcPath, dstPath string) ([]byte, error){
-    rc, err := dl.NewReader(srcPath)
-    if err != nil {
-        panic(err)
-    }
-    defer rc.Close()
-
-    f, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND,0666)
-    if err != nil {
-        return nil, err
-    }
-    defer f.Close()
-    
-    var bytes []byte
-    for {
-        p := make([]byte, 1024)
-        _, err = rc.Read(p)
-        if err != nil {
-            if err == io.EOF {
-                break
-            }
-            return nil, err
-        }
-        bytes = append(bytes, p)
-    }
-    return bytes, nil
-}
-
-func main(){
-    mp := &datalake.DataLakeConfig{
-        ...
-    }
-
-    dl, err := datalake.NewDataLakeFromConfig(mp)
-    if err != nil {
-        panic(err)
-    }
-    
-    ct, err := readFileContent(dl, "s3://mybucket/filepath", "/tmp/myfile")
-    if err != nil {
-        panic(err)
-    }
-
-    //TODO with ct
-}
-```
-- write a file to data lake
-```golang
-import(
-    datalake "github.com/improbable/imp-billing-datalake" 
-)
-
-func uploadFile(dl datalake.Datalake, srcPath, dstPath string) {
-    var err error
-    wc := dl.NewWriter(dstPath)
-    defer func() {
-        err = wc.Close()
-        if err != nil {
-            panic(err)
-        }
-    }()
-    
-    var f *os.File
-    f, err = os.Open(srcPath)
-    if err != nil {
-        panic(err)
-    }
-    defer f.Close()
-    
-    var err1, err2 error
-    for {
-        p := make([]byte, 1024)
-        _, err1 = f.Read(p)
-        if err1 != nil && err1 != io.EOF {
-            panic(err1)
-        }
-    
-        _, err2 = wc.Write(p)
-        if err2 != nil {
-            panic(err2)
-        }
-    
-        if err1 == io.EOF {
-            break
-        }
-    }
-}
-
-func main(){
-    mp := &datalake.DataLakeConfig{
-        ...
-    }
-
-    dl, err := datalake.NewDataLakeFromConfig(mp)
-    if err != nil {
-        panic(err)
-    }
-    
-    uploadFile(dl, "/tmp/myfile", "s3://mybucket/filepath")
-    
-    fmt.Println("success upload file!")
+    //TODO with fs
 }
 ```
