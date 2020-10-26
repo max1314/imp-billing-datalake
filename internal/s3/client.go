@@ -6,17 +6,18 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	blob "github.com/improbable/imp-billing-datalake"
-	"github.com/improbable/imp-billing-datalake/errors"
-	"github.com/improbable/imp-billing-datalake/internal/buffer"
 	"io"
 	"path"
 	"regexp"
-	// Empty depedencies so go-dep doesn't complain.
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+
+	blob "github.com/improbable/imp-billing-datalake"
+	"github.com/improbable/imp-billing-datalake/errors"
+	"github.com/improbable/imp-billing-datalake/internal/buffer"
 )
 
 var (
@@ -49,7 +50,7 @@ func NewDataLake(ctx context.Context, bucketName, s3Endpoint, region string, cre
 
 	ses, err := session.NewSession(config)
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't access aws services ")
+		return nil, errors.New(err, "couldn't access aws services ")
 	}
 
 	return &dataLake{
@@ -77,7 +78,7 @@ func (b *dataLake) Exists(path string) (exists bool, err error) {
 	})
 
 	if err != nil {
-		return false, errors.Wrap(err, fmt.Sprintf("failed to check if object %s exists ", path))
+		return false, errors.New(err, fmt.Sprintf("failed to check if object %s exists ", path))
 	}
 
 	for _, content := range r.Contents {
@@ -96,7 +97,7 @@ func (b *dataLake) NewReader(path string) (rc io.ReadCloser, err error) {
 		Key:    aws.String(path),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("error getting the object (%s) from the S3 compatible bucket: %s ", path, b.bucketName))
+		return nil, errors.New(err, fmt.Sprintf("error getting the object (%s) from the S3 compatible bucket: %s ", path, b.bucketName))
 	}
 
 	return r.Body, nil
@@ -116,7 +117,7 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 		_, err = b.svc.PutObjectWithContext(ctx, put)
 
 		if err != nil {
-			return errors.Wrap(err,"error putting the object on the S3 compatible server")
+			return errors.New(err,"error putting the object on the S3 compatible server")
 		}
 
 		return nil
@@ -130,7 +131,7 @@ func (b *dataLake) Delete(path string) (err error) {
 	})
 
 	if err != nil {
-		return errors.Wrap(err,"failed to delete S3 object ")
+		return errors.New(err,"failed to delete S3 object ")
 	}
 	return nil
 }
@@ -144,7 +145,7 @@ func (b *dataLake) Copy(srcPath string, destPath string) (err error) {
 	})
 
 	if err != nil {
-		return errors.Wrap(err,"failed to copy S3 object ")
+		return errors.New(err,"failed to copy S3 object ")
 	}
 
 	return nil
@@ -158,7 +159,7 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 	})
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err,"couldn't list objects at s3 compatible storage ")
+		return nil, nil, errors.New(err,"couldn't list objects at s3 compatible storage ")
 	}
 
 	for _, pref := range r.CommonPrefixes {

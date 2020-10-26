@@ -62,6 +62,6 @@ func NewDataLakeFromConfig(mp *DataLakeConfig) (DataLake, error){
 		}
 		return gcs.NewDataLake(mp.StorageContext, mp.BucketName, jwtConfig)
 	default:
-		return nil, errors.New("invalid data lake storage backend")
+		return nil, errors.New(nil,"invalid data lake storage backend")
 	}
 }

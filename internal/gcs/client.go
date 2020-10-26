@@ -5,16 +5,19 @@
 package gcs
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	blob "github.com/improbable/imp-billing-datalake"
-	"github.com/improbable/imp-billing-datalake/errors"
+	"io"
+
+	"cloud.google.com/go/storage"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
-	"io"
+
+	blob "github.com/improbable/imp-billing-datalake"
+	"github.com/improbable/imp-billing-datalake/errors"
+
 )
 
 const gcsReadCompressed=true
@@ -67,7 +70,7 @@ func (b *dataLake) NewReader(path string) (r io.ReadCloser, err error) {
 
 	reader, err := object.NewReader(b.ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Could not create reader for %s ", path))
+		return nil, errors.New(err, fmt.Sprintf("Could not create reader for %s ", path))
 	}
 	return reader, nil
 }
@@ -81,7 +84,7 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 func (b *dataLake) Exists(path string) (exists bool, err error) {
 	_, err = b.bucket.Object(path).Attrs(b.ctx)
 	if err != nil {
-		return false, errors.Wrap(err, fmt.Sprintf("could not check if %s exists ", path))
+		return false, errors.New(err, fmt.Sprintf("could not check if %s exists ", path))
 	}
 	return true, nil
 }
@@ -89,7 +92,7 @@ func (b *dataLake) Exists(path string) (exists bool, err error) {
 func (b *dataLake) Delete(path string) (err error) {
 	err = b.bucket.Object(path).Delete(b.ctx)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("could not delete %s", path))
+		return errors.New(err, fmt.Sprintf("could not delete %s", path))
 	}
 	return nil
 }
@@ -104,7 +107,7 @@ func (b *dataLake) Copy(srcName string, destName string) (err error) {
 
 	_, err = copier.Run(b.ctx)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("could not copy from %s to %s", srcName, destName))
+		return errors.New(err, fmt.Sprintf("could not copy from %s to %s", srcName, destName))
 	}
 	return nil
 }
@@ -127,7 +130,7 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 			break
 		}
 		if iterErr != nil {
-			err = errors.Wrap(err,"error listing objects from gcs ")
+			err = errors.New(err,"error listing objects from gcs ")
 			break
 		}
 		// If Query.Delimiter is non-empty, some of the ObjectAttrs returned by Next will
@@ -140,10 +143,10 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 		}
 	}
 	if err != nil {
-		return nil, nil, errors.Wrap(err, fmt.Sprintf("could not list contents at %s ", dirPath))
+		return nil, nil, errors.New(err, fmt.Sprintf("could not list contents at %s ", dirPath))
 	}
 	if len(objects) == 0 && len(dirs) == 0 {
-		return nil, nil, errors.Wrap(err, fmt.Sprintf("could not find directory %v ", dirPath))
+		return nil, nil, errors.New(err, fmt.Sprintf("could not find directory %v ", dirPath))
 	}
 	return
 }
