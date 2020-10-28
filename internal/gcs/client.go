@@ -11,25 +11,21 @@ import (
 
 	"cloud.google.com/go/storage"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
 	blob "github.com/improbable/imp-billing-datalake"
 	"github.com/improbable/imp-billing-datalake/errors"
-
 )
 
-const gcsReadCompressed=true
+const GCSReadCompressed=true
 
 // NewDataLake creates a client with explicit values of creds and project
-func NewDataLake(ctx context.Context, bucketName string, conf *jwt.Config) (blob.DataLake, error) {
+func NewDataLake(ctx context.Context, bucketName string, opts ...option.ClientOption) (blob.DataLake, error) {
 	var err error
 
 	bucket := &dataLake{bucketName: bucketName, ctx: ctx}
-	bucket.urlSigningAccount = conf.Email
-	bucket.urlSigningKey = conf.PrivateKey
-	bucket.client, err = storage.NewClient(ctx, option.WithTokenSource(conf.TokenSource(ctx)))
+	bucket.client, err = storage.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,13 +59,13 @@ type dataLake struct {
 }
 
 func (b *dataLake) NewReader(path string) (r io.ReadCloser, err error) {
-	//defer reporting.Track(reporting.NewReader, blob.GCS, &err)()
 
 	object := b.bucket.Object(path)
-	object = object.ReadCompressed(gcsReadCompressed)
+	object = object.ReadCompressed(GCSReadCompressed)
 
 	reader, err := object.NewReader(b.ctx)
 	if err != nil {
+		panic(err)
 		return nil, errors.New(err, fmt.Sprintf("Could not create reader for %s ", path))
 	}
 	return reader, nil

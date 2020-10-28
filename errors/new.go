@@ -3,14 +3,18 @@ package errors
 import "fmt"
 
 type DataLakeError struct {
-	Err error
+	err error
 	msg string
 }
 
 func New(err error, msg string) *DataLakeError {
-	return &DataLakeError{Err: err, msg: msg}
+	return &DataLakeError{err: err, msg: msg}
+}
+
+func (e *DataLakeError) InnerErr() error {
+	return e.err
 }
 
 func (e *DataLakeError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Err, e.msg)
+	return fmt.Sprintf("%v: %s", e.err, e.msg)
 }

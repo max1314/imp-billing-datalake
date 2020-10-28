@@ -24,7 +24,8 @@ var (
 	schemeRegex = regexp.MustCompile(`^https?://`)
 )
 
-const s3ForcePathStyle=true
+// `true` is using `s3.com/mybucket/file` style and `false` is using `mybucket.s3.com/file`
+const S3ForcePathStyle=true
 
 // Client abstraction over s3 client to provide upload and download signed URLs for limited time.
 type dataLake struct {
@@ -42,7 +43,7 @@ func NewDataLake(ctx context.Context, bucketName, s3Endpoint, region string, cre
 		s3Endpoint = "https://" + s3Endpoint
 	}
 	config.Endpoint = aws.String(s3Endpoint)
-	config.S3ForcePathStyle = aws.Bool(s3ForcePathStyle)
+	config.S3ForcePathStyle = aws.Bool(S3ForcePathStyle)
 
 	if region != "" {
 		config.Region = aws.String(region)
@@ -117,7 +118,8 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 		_, err = b.svc.PutObjectWithContext(ctx, put)
 
 		if err != nil {
-			return errors.New(err,"error putting the object on the S3 compatible server")
+			panic(err)
+			//return errors.New(err,"error putting the object on the S3 compatible server")
 		}
 
 		return nil
