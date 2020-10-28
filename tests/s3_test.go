@@ -17,12 +17,12 @@ func TestDataLakeS3Storage(t *testing.T) {
 	FakeS3StorageTestDecorator(bucketName, func(bucketName string, endpoint string) {
 		// create s3 datalake
 		cfg := util.DataLakeConfig{
-			BucketName: bucketName,
-			StorageBackend: "s3",
-			S3CredentialKey: "test",
+			BucketName:         bucketName,
+			StorageBackend:     "s3",
+			S3CredentialKey:    "test",
 			S3CredentialSecret: "test",
-			S3Endpoint: endpoint,
-			S3Region: "test",
+			S3Endpoint:         endpoint,
+			S3Region:           "test",
 		}
 		dl, err := util.NewDataLakeFromConfig(&cfg)
 		assert.Nil(t, err)

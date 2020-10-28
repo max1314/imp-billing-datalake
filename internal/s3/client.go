@@ -25,7 +25,7 @@ var (
 )
 
 // `true` is using `s3.com/mybucket/file` style and `false` is using `mybucket.s3.com/file`
-const S3ForcePathStyle=true
+const S3ForcePathStyle = true
 
 // Client abstraction over s3 client to provide upload and download signed URLs for limited time.
 type dataLake struct {
@@ -133,7 +133,7 @@ func (b *dataLake) Delete(path string) (err error) {
 	})
 
 	if err != nil {
-		return errors.New(err,"failed to delete S3 object ")
+		return errors.New(err, "failed to delete S3 object ")
 	}
 	return nil
 }
@@ -147,7 +147,7 @@ func (b *dataLake) Copy(srcPath string, destPath string) (err error) {
 	})
 
 	if err != nil {
-		return errors.New(err,"failed to copy S3 object ")
+		return errors.New(err, "failed to copy S3 object ")
 	}
 
 	return nil
@@ -161,7 +161,7 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 	})
 
 	if err != nil {
-		return nil, nil, errors.New(err,"couldn't list objects at s3 compatible storage ")
+		return nil, nil, errors.New(err, "couldn't list objects at s3 compatible storage ")
 	}
 
 	for _, pref := range r.CommonPrefixes {

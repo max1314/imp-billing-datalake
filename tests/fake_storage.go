@@ -3,20 +3,21 @@ package tests
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/johannesboyne/gofakes3"
 	"github.com/johannesboyne/gofakes3/backend/s3mem"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 )
 
 const GCSEndpoint = "https://storage.gcs.127.0.0.1.nip.io:4443/storage/v1/"
 
-func FakeS3StorageTestDecorator(bucketName string, testFunc func(string, string) ){
+func FakeS3StorageTestDecorator(bucketName string, testFunc func(string, string)) {
 	backend := s3mem.New()
 	faker := gofakes3.New(backend)
 	ts := httptest.NewServer(faker.Server())
@@ -45,7 +46,7 @@ func FakeS3StorageTestDecorator(bucketName string, testFunc func(string, string)
 	testFunc(bucketName, ts.URL)
 }
 
-func FakeGCSStorageTestDecorator(bucketName string, testFunc func(string, string) ){
+func FakeGCSStorageTestDecorator(bucketName string, testFunc func(string, string)) {
 	// check if fake server and bucket exist
 	bucketUrl := fmt.Sprintf("%sb/%s/o", GCSEndpoint, bucketName)
 	tr := &http.Transport{
@@ -53,13 +54,13 @@ func FakeGCSStorageTestDecorator(bucketName string, testFunc func(string, string
 	}
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get(bucketUrl)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 
 	_, err = ioutil.ReadAll(resp.Body)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	// This should be check when you use fake gcs http server for testing NewReader function.

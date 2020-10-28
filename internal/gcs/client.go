@@ -18,7 +18,7 @@ import (
 	"github.com/improbable/imp-billing-datalake/errors"
 )
 
-const GCSReadCompressed=true
+const GCSReadCompressed = true
 
 // NewDataLake creates a client with explicit values of creds and project
 func NewDataLake(ctx context.Context, bucketName string, opts ...option.ClientOption) (blob.DataLake, error) {
@@ -76,7 +76,6 @@ func (b *dataLake) NewWriter(path string) io.WriteCloser {
 	return w
 }
 
-
 func (b *dataLake) Exists(path string) (exists bool, err error) {
 	_, err = b.bucket.Object(path).Attrs(b.ctx)
 	if err != nil {
@@ -126,7 +125,7 @@ func (b *dataLake) List(dirPath string) (dirs []string, objects []string, err er
 			break
 		}
 		if iterErr != nil {
-			err = errors.New(err,"error listing objects from gcs ")
+			err = errors.New(err, "error listing objects from gcs ")
 			break
 		}
 		// If Query.Delimiter is non-empty, some of the ObjectAttrs returned by Next will

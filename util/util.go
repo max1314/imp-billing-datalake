@@ -16,30 +16,29 @@ import (
 	"github.com/improbable/imp-billing-datalake/errors"
 	"github.com/improbable/imp-billing-datalake/internal/gcs"
 	"github.com/improbable/imp-billing-datalake/internal/s3"
-
 )
 
 type DataLakeConfig struct {
-	StorageContext  		context.Context
-	BucketName 				string
+	StorageContext context.Context
+	BucketName     string
 	// s3 or gcs
-	StorageBackend 			dl.BackingStorage
+	StorageBackend dl.BackingStorage
 
 	// for s3
-	S3CredentialKey 		string
-	S3CredentialSecret 		string
-	S3Endpoint 				string //etc: s3.eu-west-2.amazonaws.com
-	S3Region 				string //etc: cn-northwest-1
+	S3CredentialKey    string
+	S3CredentialSecret string
+	S3Endpoint         string //etc: s3.eu-west-2.amazonaws.com
+	S3Region           string //etc: cn-northwest-1
 
 	// for gcs
 	// must be like: {"type":"service_account", "client_email":"", "private_key_id":"", "private_key":"", "token_uri":"", "project_id":""}
-	GCSCredentialJsonBytes 	[]byte // needed
+	GCSCredentialJsonBytes []byte // needed
 
-	GCSEndpoint				string // custom the GCS Endpoint, for unit test
-	GCSInsecureSkipVerify   bool   // skip GCS tls verify, for unit test
+	GCSEndpoint           string // custom the GCS Endpoint, for unit test
+	GCSInsecureSkipVerify bool   // skip GCS tls verify, for unit test
 }
 
-func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error){
+func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error) {
 	if mp.StorageContext == nil {
 		mp.StorageContext = context.Background()
 	}
@@ -53,13 +52,13 @@ func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error){
 		var opts []option.ClientOption
 		if mp.GCSCredentialJsonBytes != nil {
 			jwtConfig, err := google.JWTConfigFromJSON(mp.GCSCredentialJsonBytes, storage.ScopeReadWrite, storage.ScopeFullControl)
-			if err != nil{
+			if err != nil {
 				return nil, errors.New(err, "gcp jwt config error")
 			}
 			opts = append(opts, option.WithTokenSource(jwtConfig.TokenSource(mp.StorageContext)))
 		}
 		// for unit test
-		if mp.GCSEndpoint != ""{
+		if mp.GCSEndpoint != "" {
 			opts = append(opts, option.WithEndpoint(mp.GCSEndpoint))
 		}
 		// for unit test
@@ -73,6 +72,6 @@ func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error){
 		return gcs.NewDataLake(mp.StorageContext, mp.BucketName, opts...)
 
 	default:
-		return nil, errors.New(nil,"invalid data lake storage backend")
+		return nil, errors.New(nil, "invalid data lake storage backend")
 	}
 }
