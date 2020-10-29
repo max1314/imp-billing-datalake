@@ -14,18 +14,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-
 	blob "github.com/improbable/imp-billing-datalake"
 	"github.com/improbable/imp-billing-datalake/errors"
 	"github.com/improbable/imp-billing-datalake/internal/buffer"
 )
 
 var (
-	schemeRegex = regexp.MustCompile(`^https?://`)
+	schemeRegex      = regexp.MustCompile(`^https?://`)
+	S3ForcePathStyle = false
 )
-
-// `true` is using `s3.com/mybucket/file` style and `false` is using `mybucket.s3.com/file`
-const S3ForcePathStyle = true
 
 // Client abstraction over s3 client to provide upload and download signed URLs for limited time.
 type dataLake struct {

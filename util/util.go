@@ -5,17 +5,16 @@ package util
 import (
 	"context"
 	"crypto/tls"
-	"google.golang.org/api/option"
 	"net/http"
 
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"golang.org/x/oauth2/google"
-
 	dl "github.com/improbable/imp-billing-datalake"
 	"github.com/improbable/imp-billing-datalake/errors"
 	"github.com/improbable/imp-billing-datalake/internal/gcs"
 	"github.com/improbable/imp-billing-datalake/internal/s3"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 )
 
 type DataLakeConfig struct {
@@ -49,17 +48,16 @@ func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error) {
 		return s3.NewDataLake(mp.StorageContext, mp.BucketName, mp.S3Endpoint, mp.S3Region, s3Creds)
 
 	case dl.GCS:
-		var opts []option.ClientOption
 		if mp.GCSCredentialJsonBytes != nil {
 			jwtConfig, err := google.JWTConfigFromJSON(mp.GCSCredentialJsonBytes, storage.ScopeReadWrite, storage.ScopeFullControl)
 			if err != nil {
 				return nil, errors.New(err, "gcp jwt config error")
 			}
-			opts = append(opts, option.WithTokenSource(jwtConfig.TokenSource(mp.StorageContext)))
+			gcs.TokenClientOption = option.WithTokenSource(jwtConfig.TokenSource(mp.StorageContext))
 		}
 		// for unit test
 		if mp.GCSEndpoint != "" {
-			opts = append(opts, option.WithEndpoint(mp.GCSEndpoint))
+			gcs.EndpointClientOption = option.WithEndpoint(mp.GCSEndpoint)
 		}
 		// for unit test
 		if mp.GCSInsecureSkipVerify {
@@ -67,9 +65,9 @@ func NewDataLakeFromConfig(mp *DataLakeConfig) (dl.DataLake, error) {
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
 			}
 			httpClient := &http.Client{Transport: transCfg}
-			opts = append(opts, option.WithHTTPClient(httpClient))
+			gcs.HttpClientOption = option.WithHTTPClient(httpClient)
 		}
-		return gcs.NewDataLake(mp.StorageContext, mp.BucketName, opts...)
+		return gcs.NewDataLake(mp.StorageContext, mp.BucketName)
 
 	default:
 		return nil, errors.New(nil, "invalid data lake storage backend")

@@ -1,4 +1,6 @@
-package tests
+// Copyright (c) Improbable Worlds Ltd, All Rights Reserved
+
+package mocks
 
 import (
 	"crypto/tls"
@@ -63,11 +65,6 @@ func FakeGCSStorageTestDecorator(bucketName string, testFunc func(string, string
 	if err != nil {
 		panic(err)
 	}
-	// This should be check when you use fake gcs http server for testing NewReader function.
-	//host := os.Getenv("STORAGE_EMULATOR_HOST")
-	//if host != "storage.gcs.127.0.0.1.nip.io:4443" {
-	//	panic(errors.New("env:STORAGE_EMULATOR_HOST is not right! "))
-	//}
 
 	testFunc(bucketName, GCSEndpoint)
 }
