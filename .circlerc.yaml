@@ -1,0 +1,67 @@
+---
+diff_from: origin/master
+local:
+  presubmit:
+    mode: fix
+    context_lines: 2
+    diff_from: origin/master
+    diff_strategy: sinceforkpoint
+    force_env_tools: false
+    linters:
+      buildkite:
+        include_patterns:
+        - '**/*.steps.yaml'
+      clang-format:
+        arguments:
+        - -sort-includes
+        - -style=file
+        include_patterns:
+        - '**/*.cpp'
+        - '**/*.for-tests-cpp'
+        - '**/*.cc'
+        - '**/*.h'
+        version: "7"
+      copyright-header:
+        value: Copyright (c) Improbable Worlds Ltd, All Rights Reserved
+      eslint:
+        include_patterns:
+        - js/**/*.js
+        - js/**/*.jsx
+        - js/**/*.ts
+        - js/**/*.tsx
+        node_executable: node
+      impformat:
+        include_patterns:
+        - '**/*.go'
+      json:
+        include_patterns:
+        - '**/*.json'
+        indent_char: ' '
+        indent_level: 2
+      protolint:
+        arguments: []
+        include_patterns:
+        - '**/*.proto'
+        version: 0.23.0
+      shellcheck:
+        arguments: []
+        disabled_codes: []
+        include_patterns:
+        - '**/*.sh'
+        - '**/*.bash'
+        version: 0.7.0
+      shfmt:
+        arguments: []
+        include_patterns:
+        - '**/*.sh'
+        - '**/*.bash'
+        indent_level: 2
+        regex_pattern: (?P<path>.+?):(?P<line>\d*):(?P<column>\d*):(?P<message>.*)?|(?P<path>.+)
+        version: v2.3.0
+      yaml:
+        include_patterns:
+        - '**/*.yml'
+        - '**/*.yaml'
+        - '**/OWNERS'
+        - '**/OWNER_ALIASES'
+
